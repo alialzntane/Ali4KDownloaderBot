@@ -4,7 +4,8 @@ import yt_dlp
 from telegram import Update
 from telegram.ext import Application, MessageHandler, ContextTypes, filters
 
-TOKEN = os.getenv("BOT_TOKEN")
+TOKEN = os.getenv("BOT_TOKEN", "").strip()
+
 
 async def download_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
     url = update.message.text.strip()
@@ -13,7 +14,9 @@ async def download_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("أرسل رابط TikTok صحيح 📥")
         return
 
-    msg = await update.message.reply_text("⏳ جاري تحميل الفيديو بأعلى جودة متاحة...")
+    msg = await update.message.reply_text(
+        "⏳ جاري تحميل الفيديو بأعلى جودة متاحة..."
+    )
 
     try:
         loop = asyncio.get_running_loop()
@@ -42,16 +45,24 @@ async def download_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         os.remove(filename)
 
-    except Exception as e:
-        await msg.edit_text("❌ ما قدرت نحمل الفيديو. تأكد من الرابط وحاول مرة ثانية.")
+    except Exception:
+        await msg.edit_text(
+            "❌ ما قدرت نحمل الفيديو. تأكد من الرابط وحاول مرة ثانية."
+        )
+
 
 def main():
     app = Application.builder().token(TOKEN).build()
+
     app.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, download_video)
+        MessageHandler(
+            filters.TEXT & ~filters.COMMAND,
+            download_video
+        )
     )
+
     app.run_polling()
+
 
 if __name__ == "__main__":
     main()
-  
